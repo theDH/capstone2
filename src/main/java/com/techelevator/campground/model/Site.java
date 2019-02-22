@@ -10,9 +10,15 @@ public class Site {
 	private boolean accessible;
 	private int max_rv_length;		//maximum rv length that the campsite can fit, 0 indicates no rv permitted
 	private boolean utilities;
+	private double daily_fee;
 	
 	
-	
+	public double getDaily_fee() {
+		return daily_fee;
+	}
+	public void setDaily_fee(double daily_fee) {
+		this.daily_fee = daily_fee;
+	}
 	public Long getSite_id() {
 		return site_id;
 	}

@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import com.techelevator.campground.model.Campground;
 import com.techelevator.campground.model.Park;
+import com.techelevator.campground.model.Site;
 
 public class Menu {
 	
@@ -95,6 +96,14 @@ public class Menu {
 			System.out.println( campground.getOpen_from_mm()
 			+ "\t\t" + campground.getOpen_to_mm() + "\t\t" + campground.getDaily_fee());
 			i++;
+		}
+	}
+	
+	public void printSiteList(LinkedList<Site> siteList) {
+		System.out.println("\t\tSite No. \t\t Max. Occup. \t\t Accessible? \t\t Max RV Length \t\t Utility \t\t Cost");
+		for (Site site: siteList) {
+			System.out.println(site.getSite_number() + "\t\t" + site.getMax_occupancy() + "\t\t" + site.isAccessible() + "\t\t" + site.getMax_rv_length()
+			+ "\t\t" + site.isUtilities() + "\t\t" + site.getDaily_fee());
 		}
 	}
 

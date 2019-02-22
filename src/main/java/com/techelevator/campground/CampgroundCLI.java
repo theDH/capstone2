@@ -13,8 +13,11 @@ import com.techelevator.campground.model.Campground;
 import com.techelevator.campground.model.CampgroundDAO;
 import com.techelevator.campground.model.Park;
 import com.techelevator.campground.model.ParkDAO;
+import com.techelevator.campground.model.Site;
+import com.techelevator.campground.model.SiteDAO;
 import com.techelevator.campground.model.jdbc.JDBCCampgroundDAO;
 import com.techelevator.campground.model.jdbc.JDBCParkDAO;
+import com.techelevator.campground.model.jdbc.JDBCSiteDAO;
 import com.techelevator.campground.view.Menu;
 
 public class CampgroundCLI {
@@ -22,10 +25,12 @@ public class CampgroundCLI {
 	private Menu menu;
 	private ParkDAO parkDAO;
 	private CampgroundDAO campgroundDAO;
+	private SiteDAO siteDAO;
 
 	public CampgroundCLI(DataSource datasource) {
 		parkDAO = new JDBCParkDAO(datasource);
 		campgroundDAO = new JDBCCampgroundDAO(datasource);
+		siteDAO = new JDBCSiteDAO(datasource);
 		this.menu = new Menu(System.in, System.out);
 
 	}
@@ -132,7 +137,7 @@ public class CampgroundCLI {
 	private void handleCampgroundReservation(LinkedList<Campground> campgroundList) {
 		menu.printCampgroundList(campgroundList);
 		
-		int campgroundChoice = getUserInputAsAnInt("\n Please Select Campground");
+		int campgroundChoice = getUserInputAsAnInt("\n Which campground (enter 0 to cancel) ?");
 		String nameOfCampground = "";
 		int i = 1;
 		int indexOfCampground = 0;
@@ -144,7 +149,13 @@ public class CampgroundCLI {
 			}
 			i++;
 		}
-		System.out.println("You selected "+nameOfCampground);
+		String fromDate = getUserInput("What is the arrival date? (yyyy-MM-dd)");
+		String toDate = getUserInput("What is the departure date? (yyyy-MM-dd)");
+		LinkedList<Site> listOfsite = new LinkedList<Site>();
+		listOfsite = siteDAO.searchForAvailableSites(campgroundList.get(indexOfCampground),fromDate,toDate);
+		menu.printSiteList(listOfsite);
+		//System.out.println("You selected "+nameOfCampground);
+		
 	}
 
 	private void printHeading(String headingText) {
