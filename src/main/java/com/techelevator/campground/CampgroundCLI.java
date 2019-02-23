@@ -13,11 +13,14 @@ import com.techelevator.campground.model.Campground;
 import com.techelevator.campground.model.CampgroundDAO;
 import com.techelevator.campground.model.Park;
 import com.techelevator.campground.model.ParkDAO;
+import com.techelevator.campground.model.Reservation;
+import com.techelevator.campground.model.ReservationDAO;
 import com.techelevator.campground.model.Site;
 import com.techelevator.campground.model.SiteDAO;
 import com.techelevator.campground.model.jdbc.JDBCCampgroundDAO;
 import com.techelevator.campground.model.jdbc.JDBCParkDAO;
 import com.techelevator.campground.model.jdbc.JDBCSiteDAO;
+import com.techelevator.campground.model.jdbc.JDBCReservationDAO;
 import com.techelevator.campground.view.Menu;
 
 public class CampgroundCLI {
@@ -26,11 +29,13 @@ public class CampgroundCLI {
 	private ParkDAO parkDAO;
 	private CampgroundDAO campgroundDAO;
 	private SiteDAO siteDAO;
+	private ReservationDAO reservationDAO;
 
 	public CampgroundCLI(DataSource datasource) {
 		parkDAO = new JDBCParkDAO(datasource);
 		campgroundDAO = new JDBCCampgroundDAO(datasource);
 		siteDAO = new JDBCSiteDAO(datasource);
+		reservationDAO = new JDBCReservationDAO(datasource);
 		this.menu = new Menu(System.in, System.out);
 
 	}
@@ -104,7 +109,9 @@ public class CampgroundCLI {
 				handleViewCampground(thePark);
 //			
 			} else if (userChoice.contentEquals(Util.CAMPGROUND_MENU_OPTION_SEARCH_FOR_RESERVATION)) {
-				System.out.println("Search for reservation");
+				int resevationNumber = getUserInputAsAnInt("Please Enter Existing Reservation ID Number ");
+				Reservation existingReservation = reservationDAO.handleExistingReservationSearch(Long.valueOf(resevationNumber));
+				menu.displayReservation(existingReservation);
 //			System.exit(0);
 			} else if (userChoice.contentEquals(Util.CAMPGROUND_MENU_OPTION_RETURN_TO_PREVIOUS)) {
 				campgroundMenu = false;
@@ -112,6 +119,8 @@ public class CampgroundCLI {
 		}
 
 	}
+
+	
 
 	private void handleViewCampground(Park thePark) {
 		LinkedList<Campground> campgroundList = new LinkedList<Campground>();
@@ -149,13 +158,27 @@ public class CampgroundCLI {
 			}
 			i++;
 		}
-		String fromDate = getUserInput("What is the arrival date? (yyyy/MM/dd)");
-		String toDate = getUserInput("What is the departure date? (yyyy/MM/dd)");
-		LinkedList<Site> listOfsite = new LinkedList<Site>();
-		listOfsite = siteDAO.searchForAvailableSites(campgroundList.get(indexOfCampground),fromDate,toDate);
-		menu.printSiteList(listOfsite);
+		
+		handleNewReservation(campgroundList,indexOfCampground); // Starting entering dates, so switch to Reservation objects
+		
+
 		//System.out.println("You selected "+nameOfCampground);
 		
+	}
+
+	private void handleNewReservation(LinkedList<Campground> campgroundList, int indexOfCampground) {
+		String fromDate = getUserInput("What is the arrival date? (yyyy/MM/dd)");
+		String toDate = getUserInput("What is the departure date? (yyyy/MM/dd)");
+		
+		LinkedList<Site> listOfsite = new LinkedList<Site>();
+		listOfsite = siteDAO.searchForAvailableSites(campgroundList.get(indexOfCampground),fromDate,toDate);
+		System.out.println("Results matching your criteria");
+		menu.printSiteList(listOfsite);
+		int siteIdToReserve = getUserInputAsAnInt("Which site should be reserved (enter 0 to cancel)?)");
+		String nameOfReservation = getUserInput("What name should the reservation be made under?");
+		
+		Long reservationId = reservationDAO.makeNewReservation(siteIdToReserve,nameOfReservation,fromDate, toDate);
+		System.out.println("The reservation has been confirmed and the reservation id is " + reservationId);
 	}
 
 	private void printHeading(String headingText) {

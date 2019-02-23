@@ -13,6 +13,7 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 
+import com.techelevator.campground.Util;
 import com.techelevator.campground.model.Campground;
 import com.techelevator.campground.model.Site;
 import com.techelevator.campground.model.SiteDAO;
@@ -31,22 +32,24 @@ public class JDBCSiteDAO implements SiteDAO {
 		
 		String sqlQueryForConflictingReservation = "SELECT s.site_id " + "FROM reservation r "
 				+ "JOIN site s ON r.site_id = s.site_id " + "JOIN campground c ON c.campground_id = s.campground_id "
-				+ "WHERE c.campground_id = ? AND ((? > from_date AND ? < to_date) OR (?  > from_date AND ? <= to_date) "
-				+ "OR (? >= from_date AND ? < to_date) OR (? < from_date AND ? > to_date)) ORDER BY s.site_id; ";
+				+ "WHERE c.campground_id = ? AND ((? > from_date AND ? < to_date) OR (?  >= from_date AND ? <= to_date) "
+				+ "OR (? >= from_date AND ? < to_date) OR (? < from_date AND ? > to_date) OR (? = from_date AND ? = to_date)) ORDER BY s.site_id; ";
 
-		Date arrivalDate = new Date();
-		Date departureDate = new Date();
-		try {
-			arrivalDate = new SimpleDateFormat("yyyy/MM/dd").parse(arrival);
-			departureDate = new SimpleDateFormat("yyyy/MM/dd").parse(departure);
-		} catch (ParseException e) {
-			System.out.println("Invalid date, please enter again");
-		}
+//		Date arrivalDate = new Date();
+//		Date departureDate = new Date();
+//		try {
+//			arrivalDate = new SimpleDateFormat("yyyy/MM/dd").parse(arrival);
+//			departureDate = new SimpleDateFormat("yyyy/MM/dd").parse(departure);
+//		} catch (ParseException e) {
+//			System.out.println("Invalid date, please enter again");
+//		}
 		
+		Date arrivalDate = Util.stringToDate(arrival);
+		Date departureDate = Util.stringToDate(departure);
 
 		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlQueryForConflictingReservation, campground.getCampground_id(),
 				arrivalDate, departureDate, arrivalDate, arrivalDate, departureDate, departureDate, arrivalDate,
-				departureDate);
+				departureDate, arrivalDate, departureDate);
 
 		LinkedList<Long> unavailableSiteIdList = new LinkedList<Long>();
 
@@ -93,7 +96,7 @@ public class JDBCSiteDAO implements SiteDAO {
 		"FROM reservation r " + 
 		"JOIN site s ON r.site_id = s.site_id " + 
 		"JOIN campground c ON c.campground_id = s.campground_id " + 
-		"WHERE c.campground_id = ? AND s.site_id = ?  LIMIT 5; ";
+		"WHERE c.campground_id = ? AND s.site_id = ?  LIMIT 1; ";
 		SqlRowSet results3 = jdbcTemplate.queryForRowSet(sqlQueryForAvailableReservation, durationOfStay, campground.getCampground_id(), siteId );
 		
 		while (results3.next()) {

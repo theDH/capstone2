@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 import com.techelevator.campground.model.Campground;
 import com.techelevator.campground.model.Park;
+import com.techelevator.campground.model.Reservation;
 import com.techelevator.campground.model.Site;
 
 public class Menu {
@@ -110,6 +111,16 @@ public class Menu {
 			i++;
 		}
 		}
+	}
+
+	public void displayReservation(Reservation existingReservation) {
+		System.out.println("Existing Reservation: " + existingReservation.getReservation_id());
+		System.out.println("Site: " + existingReservation.getSite_id() );
+		System.out.println("Reservation Name: " + existingReservation.getReservation_name());
+		System.out.println("Reservation arrival date: " + existingReservation.getFrom_date());
+		System.out.println("Reservation departure date: " + existingReservation.getTo_date());
+		System.out.println("Reservation creation date: "+ existingReservation.getCreate_date());
+		
 	}
 
 }
