@@ -149,8 +149,8 @@ public class CampgroundCLI {
 			}
 			i++;
 		}
-		String fromDate = getUserInput("What is the arrival date? (yyyy-MM-dd)");
-		String toDate = getUserInput("What is the departure date? (yyyy-MM-dd)");
+		String fromDate = getUserInput("What is the arrival date? (yyyy/MM/dd)");
+		String toDate = getUserInput("What is the departure date? (yyyy/MM/dd)");
 		LinkedList<Site> listOfsite = new LinkedList<Site>();
 		listOfsite = siteDAO.searchForAvailableSites(campgroundList.get(indexOfCampground),fromDate,toDate);
 		menu.printSiteList(listOfsite);

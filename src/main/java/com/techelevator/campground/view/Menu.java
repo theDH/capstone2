@@ -12,8 +12,7 @@ import com.techelevator.campground.model.Park;
 import com.techelevator.campground.model.Site;
 
 public class Menu {
-	
-	
+
 	private PrintWriter out;
 	private Scanner in;
 
@@ -24,7 +23,7 @@ public class Menu {
 
 	public Object getChoiceFromOptions(Object[] options) {
 		Object choice = null;
-		while(choice == null) {
+		while (choice == null) {
 			displayMenuOptions(options);
 			choice = getChoiceFromUserInput(options);
 		}
@@ -33,49 +32,48 @@ public class Menu {
 
 	private void displayMenuOptions(Object[] options) {
 		out.println();
-		for(int i = 0; i < options.length; i++) {
-			int optionNum = i+1;
-			out.println(optionNum+") "+options[i]);
+		for (int i = 0; i < options.length; i++) {
+			int optionNum = i + 1;
+			out.println(optionNum + ") " + options[i]);
 		}
 		out.print("\nPlease choose an option >>> ");
 		out.flush();
-	}	
-	
+	}
+
 	private Object getChoiceFromUserInput(Object[] options) {
 		Object choice = null;
 		String userInput = in.nextLine();
 		try {
 			int selectedOption = Integer.valueOf(userInput);
-			if(selectedOption <= options.length) {
+			if (selectedOption <= options.length) {
 				choice = options[selectedOption - 1];
 			}
-		} catch(NumberFormatException e) {
-			// eat the exception, an error message will be displayed below since choice will be null
+		} catch (NumberFormatException e) {
+			// eat the exception, an error message will be displayed below since choice will
+			// be null
 		}
-		if(choice == null) {
-			out.println("\n*** "+userInput+" is not a valid option ***\n");
+		if (choice == null) {
+			out.println("\n*** " + userInput + " is not a valid option ***\n");
 		}
 		return choice;
 	}
 
-
-	
 //====================Print To Console methods=======================//	
 	public void printParkList(LinkedList<Park> listOfPark) {
 		System.out.println();
 		if (listOfPark.size() > 0) {
 			int i = 1;
 			for (Park park : listOfPark) {
-				
+
 				System.out.println(i + ") \t" + park.getPark_name());
 				i++;
 			}
 		} else {
 			System.out.println("\n **No result for park list query**");
 		}
-		
+
 	}
-	
+
 	public void printParkInformation(Park parkName) {
 		System.out.println(parkName.getPark_name());
 		System.out.println("Location:\t\t" + parkName.getPark_location());
@@ -83,27 +81,34 @@ public class Menu {
 		System.out.println("Area:\t\t\t" + parkName.getPark_area() + " sq km");
 		System.out.println("Annual Visitors: \t" + parkName.getVisitors());
 		System.out.println("\n" + parkName.getDescription() + "\n");
-		
-		
+
 	}
 
 	public void printCampgroundList(LinkedList<Campground> campgroundList) {
 		System.out.println("\t\tName \t\t\t Open \t\t Close \t\t Daily Fee");
-		int i =1;
-		for (Campground campground: campgroundList) {
-			System.out.print("#" + i + "\t" );
-			System.out.format("%-35s", campground.getCampground_name());
-			System.out.println( campground.getOpen_from_mm()
-			+ "\t\t" + campground.getOpen_to_mm() + "\t\t" + campground.getDaily_fee());
-			i++;
+		int i = 1;
+		for (Campground campground : campgroundList) {
+			
+				System.out.print("#" + i + "\t");
+				System.out.format("%-35s", campground.getCampground_name());
+				System.out.println(campground.getOpen_from_mm() + "\t\t" + campground.getOpen_to_mm() + "\t\t"
+						+ campground.getDaily_fee());
+				i++;
+			
 		}
 	}
-	
+
 	public void printSiteList(LinkedList<Site> siteList) {
-		System.out.println("\t\tSite No. \t\t Max. Occup. \t\t Accessible? \t\t Max RV Length \t\t Utility \t\t Cost");
-		for (Site site: siteList) {
-			System.out.println(site.getSite_number() + "\t\t" + site.getMax_occupancy() + "\t\t" + site.isAccessible() + "\t\t" + site.getMax_rv_length()
-			+ "\t\t" + site.isUtilities() + "\t\t" + site.getDaily_fee());
+		System.out.println("Site ID. \t Max. Occup. \t Accessible? \t Max RV Length \t\t Utility \t Total Cost");
+		int i = 1;
+		Long siteId = Long.valueOf(0); // Used to removed the identical site id because the GROUP BY clause didn't worked
+		for (Site site : siteList) {
+			while(i<6 && site.getSite_id() != siteId ) {
+				siteId = site.getSite_id();
+			System.out.println(site.getSite_id() + "\t\t\t" + site.getMax_occupancy() + "\t\t" + site.isAccessible()
+					+ "\t\t" + site.getMax_rv_length() + "\t\t" + site.isUtilities() + "\t\t" + site.getDaily_fee());
+			i++;
+		}
 		}
 	}
 
