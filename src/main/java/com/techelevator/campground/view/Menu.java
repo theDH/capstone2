@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.techelevator.campground.Util;
 import com.techelevator.campground.model.Campground;
 import com.techelevator.campground.model.Park;
 import com.techelevator.campground.model.Reservation;
@@ -86,28 +87,31 @@ public class Menu {
 	}
 
 	public void printCampgroundList(LinkedList<Campground> campgroundList) {
-		System.out.println("\t\tName \t\t\t Open \t\t Close \t\t Daily Fee");
+		System.out.println("\tName \t\t\t\t Open \t\t Close \t\t Daily Fee");
 		int i = 1;
 		for (Campground campground : campgroundList) {
 			
-				System.out.print("#" + i + "\t");
-				System.out.format("%-35s", campground.getCampground_name());
-				System.out.println(campground.getOpen_from_mm() + "\t\t" + campground.getOpen_to_mm() + "\t\t"
-						+ campground.getDaily_fee());
-				i++;
+				//System.out.format("%-2s" + i + " ");
+				System.out.format("%-41s", i + "# " + campground.getCampground_name());
+				
+				System.out.format("%-16s", Util.convertMonthNumberIntoString(Integer.parseInt(campground.getOpen_from_mm())));  
+						
+				System.out.format("%-16s", Util.convertMonthNumberIntoString(Integer.parseInt(campground.getOpen_to_mm()))); 
+				System.out.format("%-2s", campground.getDaily_fee() + "\n");
+				i++; 
 			
 		}
 	}
 
 	public void printSiteList(LinkedList<Site> siteList) {
-		System.out.println("Site ID. \t Max. Occup. \t Accessible? \t Max RV Length \t\t Utility \t Total Cost");
+		System.out.println("Site ID. \t Max. Occup. \t Accessible? \t Max RV Length \t\t Utility \tTotal Cost");
 		int i = 1;
 		Long siteId = Long.valueOf(0); // Used to removed the identical site id because the GROUP BY clause didn't worked
 		for (Site site : siteList) {
 			while(i<6 && site.getSite_id() != siteId ) {
 				siteId = site.getSite_id();
-			System.out.println(site.getSite_id() + "\t\t\t" + site.getMax_occupancy() + "\t\t" + site.isAccessible()
-					+ "\t\t" + site.getMax_rv_length() + "\t\t" + site.isUtilities() + "\t\t" + site.getDaily_fee());
+			System.out.println(site.getSite_id() + "\t\t\t" + site.getMax_occupancy() + "\t  " + Util.convertIsAccessible(site.isAccessible())
+					+ "\t\t\t" + Util.convertRvToString(site.getMax_rv_length()) + "\t\t " + Util.convertUtilityBool(site.isUtilities()) + "\t\t " + site.getDaily_fee());
 			i++;
 		}
 		}

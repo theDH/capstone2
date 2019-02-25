@@ -4,6 +4,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.LinkedList;
+
+import com.techelevator.campground.model.Campground;
 
 public class Util {
 	// DO NOT INSTANTIATE
@@ -52,4 +55,71 @@ public class Util {
 		}
 		return date;
 	}
+
+	// ================DAN SUNDAY ADD SECTION START===============================
+
+	public static boolean isReservationInSeason(LinkedList<Campground> campgroundList, int indexId, String arrivalDate,
+			String departureDate) {
+
+		int arrivalMonth = getMonth(arrivalDate);
+		int departureMonth = getMonth(departureDate);
+
+		int parkOpen = Integer.parseInt((campgroundList.get(indexId).getOpen_from_mm()));
+		
+		int parkClose = Integer.parseInt(campgroundList.get(indexId).getOpen_to_mm());
+
+		if (arrivalMonth < parkOpen || departureMonth > parkClose) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private static int getMonth(String yearMmDd) {
+
+		int result = Integer.parseInt(yearMmDd.substring(5, 7));
+		return result;
+	}
+
+
+	public static String convertMonthNumberIntoString(int number) {		
+		String[] monthString = { "January", "February", "March", "April", "May", "June", "July", "August", "September",
+				"October", "November", "December" };
+		String month = "";
+		for (int i = 1; i <= 12; i++) {
+			if (number == i) {
+				month = monthString[i - 1];
+
+			}
+		}
+		return month;
+	}
+	
+	public static String convertIsAccessible(boolean isAccessible) {
+		String accessible = "";
+		if(isAccessible == true) {
+			accessible = "Yes";
+		}else {
+			accessible = "No";
+		}
+		return accessible;
+	}
+	
+	public static String convertRvToString(int length) { // sunday update to display length
+		if (length < 1) {
+			return "N/A";
+		} else {
+			String maxRv = Integer.toString(length);
+			return maxRv + " ft";
+		}
+	}
+
+	public static String convertUtilityBool(boolean utility) { // sunday update to display ifUtility
+		if (utility == true) {
+			return "Yes";
+		} else {
+			return "No";
+		}
+	}
+	// ================END===============================
 }

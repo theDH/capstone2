@@ -152,7 +152,7 @@ public class CampgroundCLI {
 		int indexOfCampground = 0;
 		for (Campground campground : campgroundList) {
 			if (campgroundChoice == i) {
-				nameOfCampground = campground.getCampground_name();
+				nameOfCampground = campground.getCampground_name(); 	//why do we do this and then not pass it on?
 				indexOfCampground = i - 1;
 
 			}
@@ -162,19 +162,27 @@ public class CampgroundCLI {
 		handleNewReservation(campgroundList,indexOfCampground); // Starting entering dates, so switch to Reservation objects
 		
 
-		//System.out.println("You selected "+nameOfCampground);
+		
 		
 	}
-
+//=========================START SECTION DAN ADDED SUNDAY===================
 	private void handleNewReservation(LinkedList<Campground> campgroundList, int indexOfCampground) {
 		String fromDate = getUserInput("What is the arrival date? (yyyy/MM/dd)");
 		String toDate = getUserInput("What is the departure date? (yyyy/MM/dd)");
 		
+		boolean outOfSeason = Util.isReservationInSeason(campgroundList, indexOfCampground, fromDate, toDate);
+		if(outOfSeason) {
+			System.out.println("Your reservation includes dates when the park campground is closed, please select alternative date");
+		}
+		
+		//==================END===========================
 		LinkedList<Site> listOfsite = new LinkedList<Site>();
 		listOfsite = siteDAO.searchForAvailableSites(campgroundList.get(indexOfCampground),fromDate,toDate);
 		System.out.println("Results matching your criteria");
 		menu.printSiteList(listOfsite);
 		int siteIdToReserve = getUserInputAsAnInt("Which site should be reserved (enter 0 to cancel)?)");
+		
+
 		String nameOfReservation = getUserInput("What name should the reservation be made under?");
 		
 		Long reservationId = reservationDAO.makeNewReservation(siteIdToReserve,nameOfReservation,fromDate, toDate);
