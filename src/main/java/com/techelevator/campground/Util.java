@@ -65,7 +65,7 @@ public class Util {
 		int departureMonth = getMonth(departureDate);
 
 		int parkOpen = Integer.parseInt((campgroundList.get(indexId).getOpen_from_mm()));
-		
+
 		int parkClose = Integer.parseInt(campgroundList.get(indexId).getOpen_to_mm());
 
 		if (arrivalMonth < parkOpen || departureMonth > parkClose) {
@@ -81,8 +81,7 @@ public class Util {
 		return result;
 	}
 
-
-	public static String convertMonthNumberIntoString(int number) {		
+	public static String convertMonthNumberIntoString(int number) {
 		String[] monthString = { "January", "February", "March", "April", "May", "June", "July", "August", "September",
 				"October", "November", "December" };
 		String month = "";
@@ -94,17 +93,17 @@ public class Util {
 		}
 		return month;
 	}
-	
+
 	public static String convertIsAccessible(boolean isAccessible) {
 		String accessible = "";
-		if(isAccessible == true) {
+		if (isAccessible == true) {
 			accessible = "Yes";
-		}else {
+		} else {
 			accessible = "No";
 		}
 		return accessible;
 	}
-	
+
 	public static String convertRvToString(int length) { // sunday update to display length
 		if (length < 1) {
 			return "N/A";
@@ -120,6 +119,55 @@ public class Util {
 		} else {
 			return "No";
 		}
+	}
+	//================DAN LOOK AT THIS AND LEARN IT=======================
+	public static int getMaxOccupancy(int numberOfPeople) {
+		if (numberOfPeople <= 0) {
+			System.out.println("You can't reserve a site for less than 1 person!");
+			System.out.println("The program is ending");
+			System.exit(0);
+		} else if (numberOfPeople >= 1 && numberOfPeople <= 6) {
+			return 6;
+		} else if (numberOfPeople == 7) {
+			return 7;
+		} else if (numberOfPeople > 7 && numberOfPeople <= 10) {
+			return 10;
+		} else if (numberOfPeople > 10 && numberOfPeople <= 35) {
+			return 35;
+		} else if (numberOfPeople > 35 && numberOfPeople <= 55) {
+			return 55;
+		} else {
+			System.out.println("You can't reserve a site for less than 1 person!");
+			System.out.println("The program is ending");
+			System.exit(0);
+		}
+		return -1;
+	}
+
+	public static boolean checkForArrivalDateAfterDeparture(String arrival, String departure) {
+
+		Date arrivalDate = Util.stringToDate(arrival);
+		Date departureDate = Util.stringToDate(departure);
+		
+		boolean conflict = false;
+		if (arrivalDate.after(departureDate)) {
+
+			conflict = true;
+		}
+		return conflict;
+	}
+
+	public static boolean checkForArrivalDateInPast(String arrival, String departure) {
+		
+		Date arrivalDate = Util.stringToDate(arrival);
+		Date departureDate = Util.stringToDate(departure);
+		
+		Date currentDate = new Date();
+		boolean conflict = false;
+		if (arrivalDate.before(currentDate)) {
+			conflict = true;
+		}
+		return conflict;
 	}
 	// ================END===============================
 }

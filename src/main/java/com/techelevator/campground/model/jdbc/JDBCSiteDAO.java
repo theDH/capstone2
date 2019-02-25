@@ -30,11 +30,13 @@ public class JDBCSiteDAO implements SiteDAO {
 
 		///////// Collection conflictingRervation
 
-		String sqlQueryForConflictingReservation = "SELECT s.site_id " + "FROM reservation r "
-				+ "JOIN site s ON r.site_id = s.site_id " + "JOIN campground c ON c.campground_id = s.campground_id "
-				+ "WHERE c.campground_id = ? AND ((? > from_date AND ? < to_date) OR (?  >= from_date AND ? <= to_date) "
-				+ "OR (? >= from_date AND ? < to_date) OR (? < from_date AND ? > to_date) OR (? = from_date AND ? = to_date)) ORDER BY s.site_id; ";
 
+			
+//		String sqlQueryForConflictingReservation = "SELECT s.site_id " + "FROM reservation r "
+//				+ "JOIN site s ON r.site_id = s.site_id " + "JOIN campground c ON c.campground_id = s.campground_id "
+//				+ "WHERE c.campground_id = ? AND ((? > from_date AND ? < to_date) OR (?  >= from_date AND ? <= to_date) "
+//				+ "OR (? >= from_date AND ? < to_date) OR (? < from_date AND ? > to_date) OR (? = from_date AND ? = to_date)) ORDER BY s.site_id; ";
+//
 //		Date arrivalDate = new Date();
 //		Date departureDate = new Date();
 //		try {
@@ -44,52 +46,32 @@ public class JDBCSiteDAO implements SiteDAO {
 //			System.out.println("Invalid date, please enter again");
 //		}
 		// ======================START SECTION DAN added this sunday====================
-		Date arrivalDate = Util.stringToDate(arrival);
-		Date departureDate = Util.stringToDate(departure);
+	
 
-		LinkedList<Site> listOfAvailableCampgrounds = new LinkedList<Site>();
 
-		boolean conflict1 = checkForArrivalDateAfterDeparture(arrivalDate, departureDate);
-		boolean conflict2 = checkForArrivalDateInPast(arrivalDate, departureDate);
+		LinkedList<Long> unavailableSiteIdList = collectingConflictingReservation(campground, arrival, departure);
 
-		if (conflict1) {
-			System.out.println("\n Selected arrival date is after selected departure date, please correct \n");
-			return listOfAvailableCampgrounds;
-		} else if (conflict2) {
-			System.out.println("\n Selected arrival date is in the past, please correct \n");
-			return listOfAvailableCampgrounds;
-		}
-
+		
 		// isReservationInSeason(arrivalDate, departureDate);
 
 		// insert sql statement here to handle out of season reservations
 
-		// ==========================END NEW SECTION============================
-		SqlRowSet results = jdbcTemplate.queryForRowSet(sqlQueryForConflictingReservation,
-				campground.getCampground_id(), arrivalDate, departureDate, arrivalDate, arrivalDate, departureDate,
-				departureDate, arrivalDate, departureDate, arrivalDate, departureDate);
 
-		LinkedList<Long> unavailableSiteIdList = new LinkedList<Long>();
-
-		while (results.next()) {
-			Long unavailableSiteId = mapRowToSitesId(results);
-			unavailableSiteIdList.add(unavailableSiteId);
-		}
-
+		LinkedList<Site> listOfAvailableCampgrounds = new LinkedList<Site>();
 		// String unavailablesiteIdList =
 		// convertSiteIdListToSqlReadyString(unavailableSiteIdList);
 
 ///////// Calculating the duration of the stay
-		LocalDate arrivalLocalDate = arrivalDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		LocalDate departureLocalDate = departureDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-		Period period = Period.between(arrivalLocalDate, departureLocalDate);
-		int durationOfStay = period.getDays();
-		System.out.println("\n Duration of stay " + durationOfStay + " day(s)");
+//		LocalDate arrivalLocalDate = arrivalDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//		LocalDate departureLocalDate = departureDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+//		Period period = Period.between(arrivalLocalDate, departureLocalDate);
+//		int durationOfStay = period.getDays();
+//		System.out.println("\n Duration of stay " + durationOfStay + " day(s)");
 
 ///////// Initializing the list of available sites to a list with all the sites
 		LinkedList<Long> listOfAllSitesIdAvailable = new LinkedList<Long>();
-		String sqlQueryForAllSites = "SELECT s.site_id " + "FROM reservation r "
-				+ "JOIN site s ON r.site_id = s.site_id " + "JOIN campground c ON c.campground_id = s.campground_id "
+		String sqlQueryForAllSites = "SELECT s.site_id " + 
+				 "FROM site s " + "JOIN campground c ON c.campground_id = s.campground_id "
 				+ "WHERE c.campground_id = ?";
 		SqlRowSet results2 = jdbcTemplate.queryForRowSet(sqlQueryForAllSites, campground.getCampground_id());
 
@@ -106,11 +88,11 @@ public class JDBCSiteDAO implements SiteDAO {
 
 		for (Long siteId : listOfAllSitesIdAvailable) {
 			String sqlQueryForAvailableReservation = "SELECT s.site_id, s.campground_id, site_number, max_occupancy, accessible, max_rv_length, "
-					+ "utilities, c.daily_fee * ? AS  daily_fee " + "FROM reservation r "
-					+ "JOIN site s ON r.site_id = s.site_id "
+					+ "utilities, c.daily_fee " +  
+					 "FROM site s  "
 					+ "JOIN campground c ON c.campground_id = s.campground_id "
 					+ "WHERE c.campground_id = ? AND s.site_id = ?  LIMIT 1; ";
-			SqlRowSet results3 = jdbcTemplate.queryForRowSet(sqlQueryForAvailableReservation, durationOfStay,
+			SqlRowSet results3 = jdbcTemplate.queryForRowSet(sqlQueryForAvailableReservation,
 					campground.getCampground_id(), siteId);
 
 			while (results3.next()) {
@@ -126,6 +108,59 @@ public class JDBCSiteDAO implements SiteDAO {
 					"No campsites available for those dates, press any key to continue and try alternate dates");
 		}
 		return listOfAvailableCampgrounds;
+	}
+	
+	
+	
+	////////// Advanced Search
+	public LinkedList<Site> advancedSearchForAvailableSites(Campground campground, String fromDate, String toDate, int maxOccupancy, boolean accessible,
+           int rvLength, boolean utilities){
+		
+//// Making a list of Site Id whose Site are unvailable		
+		LinkedList<Long> unavailableSiteIdList = collectingConflictingReservation(campground, fromDate, toDate);
+
+
+///////// Initializing the list of available sites to a list with all the sites
+		LinkedList<Long> listOfAllSitesIdAvailable = new LinkedList<Long>();
+		String sqlQueryForAllSites = "SELECT s.site_id " + 
+				 "FROM site s " + "JOIN campground c ON c.campground_id = s.campground_id "
+				+ "WHERE c.campground_id = ? AND s.max_occupancy = ? AND s.accessible = ? AND s.max_rv_length = ? AND s.utilities = ? ;";
+		SqlRowSet results2 = jdbcTemplate.queryForRowSet(sqlQueryForAllSites, campground.getCampground_id(), maxOccupancy, accessible, rvLength, utilities);
+
+		LinkedList<Site> listOfAvailableCampgrounds = new LinkedList<Site>();
+
+		while (results2.next()) {
+			Long SiteId = mapRowToSitesId(results2);
+			listOfAllSitesIdAvailable.add(SiteId);
+		}
+
+////////// Remove the unvailable sites from the list of available sites
+		listOfAllSitesIdAvailable.removeAll(unavailableSiteIdList);
+
+		for (Long siteId : listOfAllSitesIdAvailable) {
+			String sqlQueryForAvailableReservation = "SELECT s.site_id, s.campground_id, site_number, max_occupancy, accessible, max_rv_length, "
+					+ "utilities, c.daily_fee " +  
+					 "FROM site s  "
+					+ "JOIN campground c ON c.campground_id = s.campground_id "
+					+ "WHERE c.campground_id = ? AND s.site_id = ?  LIMIT 1; ";
+			SqlRowSet results3 = jdbcTemplate.queryForRowSet(sqlQueryForAvailableReservation,
+					campground.getCampground_id(), siteId);
+
+			while (results3.next()) {
+				Site openSite = new Site();
+				openSite = mapRowToSite(results3);
+				listOfAvailableCampgrounds.add(openSite);
+			}
+
+		}
+
+		if (listOfAvailableCampgrounds.isEmpty()) {
+			System.out.println(
+					"No campsites available for those dates, press any key to continue and try alternate dates");
+		}
+		return listOfAvailableCampgrounds;
+		
+		
 	}
 
 	//////////////////////////// Helper methods
@@ -147,30 +182,28 @@ public class JDBCSiteDAO implements SiteDAO {
 //		return sqlString;
 //
 //	}
-	// ================DAN SUNDAY ADD SECTION START===============================
 
+	private LinkedList<Long> collectingConflictingReservation(Campground campground, String arrival, String departure) {
+		Date arrivalDate = Util.stringToDate(arrival);
+		Date departureDate = Util.stringToDate(departure);
 
+		String sqlQueryForConflictingReservation = "SELECT s.site_id " + "FROM reservation r "
+		+ "JOIN site s ON r.site_id = s.site_id " + "JOIN campground c ON c.campground_id = s.campground_id "
+		+ "WHERE c.campground_id = ? AND ((? > from_date AND ? < to_date) OR (? >= from_date AND ? <= to_date) "
+		+ "OR (? >= from_date AND ? < to_date) OR (? < from_date AND ? > to_date) OR (? = from_date AND ? = to_date)) ORDER BY s.site_id; ";
 
+		    SqlRowSet results = jdbcTemplate.queryForRowSet(sqlQueryForConflictingReservation, campground.getCampground_id(),
+		            arrivalDate, departureDate, arrivalDate, arrivalDate, departureDate, departureDate, arrivalDate,
+		            departureDate, arrivalDate, departureDate);
 
-	private boolean checkForArrivalDateAfterDeparture(Date arrivalDate, Date departureDate) {
+		    LinkedList<Long> unavailableSiteIdList = new LinkedList<Long>();
 
-		boolean conflict = false;
-		if (arrivalDate.after(departureDate)) {
-
-			conflict = true;
+		    while (results.next()) {
+		        Long unavailableSiteId = mapRowToSitesId(results);
+		        unavailableSiteIdList.add(unavailableSiteId);
+		    }
+		    return unavailableSiteIdList;
 		}
-		return conflict;
-	}
-
-	private boolean checkForArrivalDateInPast(Date arrivalDate, Date departureDate) {
-		Date currentDate = new Date();
-		boolean conflict = false;
-		if (arrivalDate.before(currentDate)) {
-			conflict = true;
-		}
-		return conflict;
-	}
-
 
 	// =====================SECTION END==================================
 	private Long mapRowToSitesId(SqlRowSet results) {

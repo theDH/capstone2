@@ -61,14 +61,14 @@ public class JDBCReservationDAO implements ReservationDAO {
 
 	}
 
-	private Long getNextReservationId() {
-		SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval(reservation.seq_reservation_id);");
-		if (nextIdResult.next()) {
-			return nextIdResult.getLong(1);
-		} else {
-			throw new RuntimeException("Something went wrong while getting an id for the new reservation");
-		}
-	}
+//	private Long getNextReservationId() {
+//		SqlRowSet nextIdResult = jdbcTemplate.queryForRowSet("SELECT nextval(reservation.seq_reservation_id);");
+//		if (nextIdResult.next()) {
+//			return nextIdResult.getLong(1);
+//		} else {
+//			throw new RuntimeException("Something went wrong while getting an id for the new reservation");
+//		}
+//	}
 
 	public Reservation handleExistingReservationSearch(Long valueOf) {
 

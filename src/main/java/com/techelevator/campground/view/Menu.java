@@ -3,6 +3,12 @@ package com.techelevator.campground.view;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+
+import java.time.LocalDate;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -70,10 +76,11 @@ public class Menu {
 				System.out.println(i + ") \t" + park.getPark_name());
 				i++;
 			}
+			
 		} else {
 			System.out.println("\n **No result for park list query**");
 		}
-
+		
 	}
 
 	public void printParkInformation(Park parkName) {
@@ -97,13 +104,16 @@ public class Menu {
 				System.out.format("%-16s", Util.convertMonthNumberIntoString(Integer.parseInt(campground.getOpen_from_mm())));  
 						
 				System.out.format("%-16s", Util.convertMonthNumberIntoString(Integer.parseInt(campground.getOpen_to_mm()))); 
-				System.out.format("%-2s", campground.getDaily_fee() + "\n");
+				System.out.format("%-2s", "$" + campground.getDaily_fee() + "\n");
 				i++; 
 			
 		}
 	}
 
-	public void printSiteList(LinkedList<Site> siteList) {
+	public void printSiteList(LinkedList<Site> siteList, String arrival, String departure) {
+		
+		int durationOfStay = durationOfTheStay(arrival, departure);
+		
 		System.out.println("Site ID. \t Max. Occup. \t Accessible? \t Max RV Length \t\t Utility \tTotal Cost");
 		int i = 1;
 		Long siteId = Long.valueOf(0); // Used to removed the identical site id because the GROUP BY clause didn't worked
@@ -111,12 +121,22 @@ public class Menu {
 			while(i<6 && site.getSite_id() != siteId ) {
 				siteId = site.getSite_id();
 			System.out.println(site.getSite_id() + "\t\t\t" + site.getMax_occupancy() + "\t  " + Util.convertIsAccessible(site.isAccessible())
-					+ "\t\t\t" + Util.convertRvToString(site.getMax_rv_length()) + "\t\t " + Util.convertUtilityBool(site.isUtilities()) + "\t\t " + site.getDaily_fee());
+					+ "\t\t\t" + Util.convertRvToString(site.getMax_rv_length()) + "\t\t " + Util.convertUtilityBool(site.isUtilities()) + "\t\t $" +  durationOfStay * site.getDaily_fee());
 			i++;
 		}
 		}
 	}
 
+	private int durationOfTheStay(String arrival, String departure) {
+		Date arrivalDate = Util.stringToDate(arrival);
+		Date departureDate = Util.stringToDate(departure);
+		LocalDate arrivalLocalDate = arrivalDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		LocalDate departureLocalDate = departureDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+		Period period = Period.between(arrivalLocalDate, departureLocalDate);
+		int durationOfStay = (int)ChronoUnit.DAYS.between(arrivalLocalDate, departureLocalDate);
+		// int durationOfStay = period.getDays();
+		return durationOfStay;
+		}
 	public void displayReservation(Reservation existingReservation) {
 		System.out.println("Existing Reservation: " + existingReservation.getReservation_id());
 		System.out.println("Site: " + existingReservation.getSite_id() );
